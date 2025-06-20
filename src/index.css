@@ -1,0 +1,5 @@
+/* No Tailwind directives needed with Bootstrap */
+/* You can add global custom styles here if necessary */
+body {
+  font-family: 'Inter', sans-serif;
+}
