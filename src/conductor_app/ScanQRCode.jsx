@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 const ScanQRCode = ({ onScan, onClose }) => {
   const [cameraError, setCameraError] = useState(null);
+  const html5QrCodeRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
     const readerElementId = 'reader';
 
     if (!document.getElementById(readerElementId)) {
@@ -12,24 +15,30 @@ const ScanQRCode = ({ onScan, onClose }) => {
     }
 
     const html5QrCode = new Html5Qrcode(readerElementId);
+    html5QrCodeRef.current = html5QrCode;
 
-    const onScanSuccess = (decodedText, decodedResult) => {
+    const onScanSuccess = (decodedText) => {
+      if (!isMountedRef.current) return;
+      
+      // Stop scanning but don't close yet
       html5QrCode.stop().then(() => {
-        onScan(decodedText);
-        onClose();
+        if (isMountedRef.current) {
+          onScan(decodedText);
+          onClose();
+        }
       }).catch(err => {
-        console.error("Failed to stop the QR scanner after success.", err);
-        onScan(decodedText);
-        onClose();
+        if (isMountedRef.current) {
+          onScan(decodedText);
+          onClose();
+        }
       });
     };
 
     const onScanFailure = (error) => {
-      // Ignore "QR code not found" errors.
+      // Ignore "QR code not found" errors
+      if (!isMountedRef.current) return;
     };
     
-    // **FIX APPLIED HERE (2 of 2)**
-    // The viewfinder box is made slightly smaller to fit nicely inside the new rectangular view.
     const config = {
       fps: 10,
       qrbox: { width: 200, height: 200 }, 
@@ -42,21 +51,29 @@ const ScanQRCode = ({ onScan, onClose }) => {
       onScanSuccess,
       onScanFailure
     ).catch(err => {
+      if (!isMountedRef.current) return;
+      
       let errorMessage = 'An unexpected error occurred. Please try again.';
       if (err.name === 'NotAllowedError') {
-        errorMessage = 'Camera permission denied. Please enable camera access for this site in your browser settings.';
+        errorMessage = 'Camera permission denied. Please enable camera access.';
       } else if (err.name === 'NotFoundError') {
-        errorMessage = 'No camera found on this device. Please ensure a camera is connected.';
+        errorMessage = 'No camera found on this device.';
       } else if (err.name === 'NotReadableError') {
-        errorMessage = 'The camera is already in use by another application. Please close it and try again.';
+        errorMessage = 'Camera is already in use by another application.';
       }
       setCameraError(errorMessage);
     });
 
     return () => {
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().catch(err => {
-          console.error("Failed to cleanly stop the QR Code scanner on cleanup.", err);
+      isMountedRef.current = false;
+      if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+        html5QrCodeRef.current.stop().catch(err => {
+          // Ignore common cleanup errors
+          if (err.message.includes('Scanner is not running') || 
+              err.name === 'NotFoundError' ||
+              err.name === 'AbortError') {
+            return;
+          }
         });
       }
     };
@@ -64,11 +81,6 @@ const ScanQRCode = ({ onScan, onClose }) => {
 
   return (
     <div style={{ position: 'relative', borderRadius: '0 0 12px 12px', overflow: 'hidden', background: '#000' }}>
-      
-      {/* **FIX APPLIED HERE (1 of 2)**
-        'aspectRatio: '5 / 2'' makes the height 40% of the width (100 / 40 = 5 / 2).
-        This creates the shorter, rectangular scanner you requested.
-      */}
       <div id="reader" style={{ width: '100%', aspectRatio: '5 / 2' }} />
 
       {cameraError && (
@@ -81,6 +93,12 @@ const ScanQRCode = ({ onScan, onClose }) => {
         }}>
           <p style={{ fontWeight: 'bold', color: '#ff6b6b', marginBottom: '15px', fontSize: '1.1rem' }}>Camera Error</p>
           <p>{cameraError}</p>
+          <button 
+            onClick={onClose}
+            className="btn btn-light mt-3 rounded-pill"
+          >
+            Close Scanner
+          </button>
         </div>
       )}
     </div>
