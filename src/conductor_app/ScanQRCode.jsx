@@ -1,87 +1,86 @@
-import React, { useState } from 'react';
-import { QrReader } from 'react-qr-reader';
+import React, { useEffect, useState } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 
-const ScanQRCode = ({ onScan, scannedTicket, ticketStatusMessage }) => {
-  // State to hold and display any camera initialization errors
+const ScanQRCode = ({ onScan, onClose }) => {
   const [cameraError, setCameraError] = useState(null);
 
-  /**
-   * This function now robustly handles errors from the library
-   * and sets a user-friendly message in the state.
-   */
-  const handleResult = (result, error) => {
-    if (result) {
-      if (cameraError) setCameraError(null); // Clear previous errors on success
-      onScan(result.getText());
+  useEffect(() => {
+    const readerElementId = 'reader';
+
+    if (!document.getElementById(readerElementId)) {
+      return;
     }
 
-    if (error) {
-      let errorMessage = `An unexpected error occurred: ${error.message}`;
-      if (error.name === 'NotAllowedError') {
-        errorMessage = 'Camera permission is denied. Please enable camera access for this site in your browser settings.';
-      } else if (error.name === 'NotFoundError') {
-        errorMessage = 'No camera found on this device. Please ensure a camera is connected and enabled.';
-      } else if (error.name === 'NotReadableError') {
-        errorMessage = 'The camera is already in use by another application or browser tab. Please close the other application and try again.';
+    const html5QrCode = new Html5Qrcode(readerElementId);
+
+    const onScanSuccess = (decodedText, decodedResult) => {
+      html5QrCode.stop().then(() => {
+        onScan(decodedText);
+        onClose();
+      }).catch(err => {
+        console.error("Failed to stop the QR scanner after success.", err);
+        onScan(decodedText);
+        onClose();
+      });
+    };
+
+    const onScanFailure = (error) => {
+      // Ignore "QR code not found" errors.
+    };
+    
+    // **FIX APPLIED HERE (2 of 2)**
+    // The viewfinder box is made slightly smaller to fit nicely inside the new rectangular view.
+    const config = {
+      fps: 10,
+      qrbox: { width: 200, height: 200 }, 
+      supportedScanTypes: [0],
+    };
+    
+    html5QrCode.start(
+      { facingMode: 'environment' },
+      config,
+      onScanSuccess,
+      onScanFailure
+    ).catch(err => {
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Camera permission denied. Please enable camera access for this site in your browser settings.';
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'No camera found on this device. Please ensure a camera is connected.';
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'The camera is already in use by another application. Please close it and try again.';
       }
       setCameraError(errorMessage);
-    }
-  };
+    });
+
+    return () => {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().catch(err => {
+          console.error("Failed to cleanly stop the QR Code scanner on cleanup.", err);
+        });
+      }
+    };
+  }, [onScan, onClose]);
 
   return (
-    <div className="text-center">
-      <div
-        style={{
-          width: '300px',
-          height: '300px',
-          margin: '0 auto 1rem auto',
-          borderRadius: '12px',
-          border: '3px solid #0d6efd',
-          overflow: 'hidden',
-          position: 'relative',
-          backgroundColor: '#000', // A background so the box is visible
-        }}
-      >
-        {/*
-          IMPORTANT CHANGE: If there's a cameraError, we display it to the user.
-          Otherwise, we render the QrReader.
-        */}
-        {cameraError ? (
-          <div className="d-flex align-items-center justify-content-center text-white h-100 p-3">
-            <div>
-              <p className="fw-bold text-danger mb-2">Camera Error</p>
-              <p className="small">{cameraError}</p>
-              <p className="small mt-3 fst-italic">
-                Note: Camera access requires a secure connection (https://) or localhost.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <QrReader
-            onResult={handleResult}
-            constraints={{ facingMode: 'environment' }}
-            containerStyle={{ width: '100%', height: '100%' }}
-            videoStyle={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        )}
-      </div>
+    <div style={{ position: 'relative', borderRadius: '0 0 12px 12px', overflow: 'hidden', background: '#000' }}>
+      
+      {/* **FIX APPLIED HERE (1 of 2)**
+        'aspectRatio: '5 / 2'' makes the height 40% of the width (100 / 40 = 5 / 2).
+        This creates the shorter, rectangular scanner you requested.
+      */}
+      <div id="reader" style={{ width: '100%', aspectRatio: '5 / 2' }} />
 
-      {/* The rest of your UI remains unchanged */}
-      {ticketStatusMessage && (
-        <p className={`h5 fw-bold ${ticketStatusMessage.includes('Valid') ? 'text-success' : 'text-danger'}`}>
-          {ticketStatusMessage}
-        </p>
-      )}
-
-      {scannedTicket && (
-        <div className="card bg-light rounded-3 p-3 w-100 text-dark mt-3">
-          <h3 className="h5 fw-bold mb-2">Validated Ticket</h3>
-          <p className="fs-5 mb-1">
-            <strong>Name:</strong> {scannedTicket.name || scannedTicket.passengers?.[0]?.fullName}
-          </p>
-          <p className="fs-5 mb-0">
-            <strong>Destination:</strong> {scannedTicket.destination}
-          </p>
+      {cameraError && (
+        <div style={{ 
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
+            backgroundColor: 'rgba(0,0,0,0.9)', color: 'white', 
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: '20px', textAlign: 'center'
+        }}>
+          <p style={{ fontWeight: 'bold', color: '#ff6b6b', marginBottom: '15px', fontSize: '1.1rem' }}>Camera Error</p>
+          <p>{cameraError}</p>
         </div>
       )}
     </div>
