@@ -10,21 +10,48 @@ const MissingProducts = () => {
   const [error, setError] = useState(null);
 
   const dummyMissingItems = [
-    { id: uuidv4(), busCode: '038038', item: 'Red Backpack', description: 'Left under seat 12A', found: false, reportedBy: 'Passenger A', date: '2024-06-15' },
-    { id: uuidv4(), busCode: '038038', item: 'Black Phone', description: 'Near window seat', found: false, reportedBy: 'Conductor', date: '2024-06-16' },
-    { id: uuidv4(), busCode: '038038', item: 'Lunch Box', description: 'Blue, forgotten on rack', found: true, foundBy: 'Conductor B', date: '2024-06-16' },
-    { id: uuidv4(), busCode: '123456', item: 'Umbrella', description: 'Black, with a curved handle', found: false, reportedBy: 'Passenger C', date: '2024-06-14' },
+    {
+      id: uuidv4(),
+      busCode: '038038',
+      item: 'Red Backpack',
+      description: 'Please collect from the Destination Bus stand Store',
+      found: false,
+      reportedBy: 'Passenger A',
+      date: '2024-06-15'
+    },
+    {
+      id: uuidv4(),
+      busCode: '038038',
+      item: 'Black Phone',
+      description: 'Please collect from the Destination Bus stand Store',
+      found: false,
+      reportedBy: 'Conductor',
+      date: '2024-06-16'
+    },
+    {
+      id: uuidv4(),
+      busCode: '038038',
+      item: 'Lunch Box',
+      description: 'Please collect from the Destination Bus stand Store',
+      found: true,
+      foundBy: 'Conductor B',
+      date: '2024-06-16'
+    },
+    {
+      id: uuidv4(),
+      busCode: '123456',
+      item: 'Umbrella',
+      description: 'Please collect from the Destination Bus stand Store',
+      found: false,
+      reportedBy: 'Passenger C',
+      date: '2024-06-14'
+    },
   ];
 
   const handleSearchMissingItems = async () => {
     setLoading(true);
     setError(null);
     try {
-      // const response = await fetch(`${API_BASE_URL}/missing-items/${busCode}`);
-      // if (!response.ok) throw new Error('Failed to fetch missing items');
-      // const data = await response.json();
-      // setMissingItems(data);
-
       const filteredItems = dummyMissingItems.filter(item =>
         (busCode ? item.busCode === busCode : true)
       );
@@ -38,7 +65,7 @@ const MissingProducts = () => {
   };
 
   useEffect(() => {
-    setMissingItems(dummyMissingItems); // Load all dummy items initially
+    setMissingItems(dummyMissingItems);
   }, []);
 
   return (
@@ -78,14 +105,26 @@ const MissingProducts = () => {
         {missingItems.map((item) => (
           <div key={item.id} className="col-12">
             <div className="card shadow-sm rounded-4 p-4 d-flex flex-column flex-md-row align-items-center justify-content-between border-0">
-              <div className="text-dark mb-3 mb-md-0 me-md-3 text-center text-md-start">
-                <h3 className="h5 fw-semibold mb-1">Item: {item.item}</h3>
-                <p className="fs-5 mb-0">Bus Code: {item.busCode}</p>
-                <p className="text-muted mb-0">Description: {item.description}</p>
-                <p className={`fw-medium mb-0 ${item.found ? 'text-success' : 'text-danger'}`}>
-                  Status: {item.found ? 'Found' : 'Missing'}
-                </p>
-                {item.reportedBy && <p className="text-muted small mb-0">Reported By: {item.reportedBy} on {item.date}</p>}
+              <div className="d-flex align-items-center mb-3 mb-md-0 me-md-3">
+                <img
+                  src={`https://via.placeholder.com/80?text=${encodeURIComponent(item.item)}`}
+                  alt={item.item}
+                  className="rounded-circle me-3"
+                  style={{ width: '80px', height: '80px', objectFit: 'cover', border: '2px solid #ccc' }}
+                />
+                <div className="text-dark text-center text-md-start">
+                  <h3 className="h5 fw-semibold mb-1">Item: {item.item}</h3>
+                  <p className="fs-5 mb-0">Bus Code: {item.busCode}</p>
+                  <p className="text-muted mb-0">Description: {item.description}</p>
+                  <p className={`fw-medium mb-0 ${item.found ? 'text-success' : 'text-danger'}`}>
+                    Status: {item.found ? 'Found' : 'Missing'}
+                  </p>
+                  {item.reportedBy && (
+                    <p className="text-muted small mb-0">
+                      Reported By: {item.reportedBy} on {item.date}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

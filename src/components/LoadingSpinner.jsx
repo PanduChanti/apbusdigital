@@ -5,7 +5,7 @@ const LoadingSpinner = () => (
     <div className="spinner-border text-primary" role="status">
       <span className="visually-hidden">Loading...</span>
     </div>
-    <p className="ms-2 text-muted">Loading...</p>
+   
   </div>
 );
 
