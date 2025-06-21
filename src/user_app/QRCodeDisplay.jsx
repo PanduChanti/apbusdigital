@@ -11,7 +11,6 @@ const QRCodeDisplay = ({ ticketDetails }) => {
     if (qrCodeRef.current && ticketDetails) {
       qrCodeRef.current.innerHTML = '';
 
-      // IMPORTANT: Use the backend's unique ID for the ticket. This is critical for validation.
       const uniqueTicketIdentifier = ticketDetails._id || ticketDetails.id;
 
       if (!uniqueTicketIdentifier) {
@@ -19,11 +18,10 @@ const QRCodeDisplay = ({ ticketDetails }) => {
       }
 
       const qrData = JSON.stringify({
-        ticketId: uniqueTicketIdentifier, // This is the most important field for matching.
+        ticketId: uniqueTicketIdentifier,
         busCode: ticketDetails.busCode,
         destination: ticketDetails.destination,
         passengers: ticketDetails.passengers.length,
-        // Add any other data you might want to display on the scanner's screen
         timestamp: new Date().toISOString(),
         userId: userId || 'anonymous',
       });
@@ -46,7 +44,6 @@ const QRCodeDisplay = ({ ticketDetails }) => {
     }
   }, [ticketDetails, userId]);
 
-  // This is a local simulation and does not affect the backend status.
   const simulateExpiration = () => {
     setIsExpired(true);
   };
@@ -56,30 +53,32 @@ const QRCodeDisplay = ({ ticketDetails }) => {
   }
 
   return (
-    <div className={`card shadow-sm rounded-4 p-4 mx-auto text-center ${isExpired ? 'opacity-50' : ''}`} style={{ maxWidth: '350px' }}>
-      <h2 className="h4 fw-bold text-dark mb-4">Your E-Ticket QR Code</h2>
+    <div className={`card shadow rounded-4 p-4 mx-auto text-center ${isExpired ? 'opacity-50' : ''}`} style={{ maxWidth: '380px' }}>
+      <h2 className="h5 fw-bold text-primary mb-4">🎟️ Your E-Ticket QR Code</h2>
 
-      <div className="d-flex justify-content-center mb-4 position-relative">
-        <div ref={qrCodeRef} className="p-2 border border-secondary rounded-3 bg-white"></div>
+      <div className="position-relative d-flex justify-content-center align-items-center mb-4">
+        <div ref={qrCodeRef} className="p-2 bg-white border border-2 rounded-3"></div>
         {isExpired && (
-          <div className="position-absolute top-0 start-0 w-100 h-100 bg-secondary bg-opacity-75 rounded-3 d-flex align-items-center justify-content-center">
-            <span className="text-white display-5 fw-bold" style={{ transform: 'rotate(-15deg)' }}>EXPIRED</span>
+          <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75 rounded-3">
+            <span className="text-white fs-1 fw-bold" style={{ transform: 'rotate(-15deg)' }}>
+              EXPIRED
+            </span>
           </div>
         )}
       </div>
 
-      <div className="text-muted fs-5">
-        <p><strong>Bus Code:</strong> {ticketDetails.busCode}</p>
-        <p><strong>Bus No:</strong> {ticketDetails.busNo}</p>
-        <p><strong>Destination:</strong> {ticketDetails.destination}</p>
-        <p><strong>Amount Paid:</strong> ₹{ticketDetails.totalFare.toFixed(2)}</p>
-        <p className="text-success fw-medium mt-3">Arriving in ~30 Mins at {ticketDetails.source} stop</p>
+      <div className="text-muted text-start small px-2">
+        <p><strong>🚌 Bus Code:</strong> {ticketDetails.busCode}</p>
+        <p><strong>🔢 Bus No:</strong> {ticketDetails.busNo}</p>
+        <p><strong>📍 Destination:</strong> {ticketDetails.destination}</p>
+        <p><strong>💰 Paid:</strong> ₹{ticketDetails.totalFare.toFixed(2)}</p>
+        <p className="text-success fw-semibold mt-3">Arriving in ~30 mins at <strong>{ticketDetails.source}</strong></p>
       </div>
-      
+
       {!isExpired && (
         <button
           onClick={simulateExpiration}
-          className="btn btn-warning btn-sm w-100 rounded-pill shadow mt-4"
+          className="btn btn-warning btn-sm w-100 rounded-pill mt-4 shadow-sm"
         >
           Simulate Manual Expiration
         </button>

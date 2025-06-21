@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
-import { API_BASE_URL } from '../App.jsx'; // API_BASE_URL from App.jsx
-import { AppContext } from '../context/AppContext.jsx'; // CORRECTED IMPORT: AppContext from context folder
+import { API_BASE_URL } from '../App.jsx';
+import { AppContext } from '../context/AppContext.jsx';
 import { v4 as uuidv4 } from 'uuid';
 
 const BookTicket = () => {
@@ -39,7 +39,11 @@ const BookTicket = () => {
   const calculateFare = () => {
     if (!bus) return 0;
     const baseFare = bus.distanceKm * bus.farePerKm;
-    const totalFare = baseFare * passengers.length;
+    let totalFare = 0;
+    passengers.forEach(passenger => {
+      const age = parseInt(passenger.age, 10) || 0;
+      totalFare += age >= 50 ? baseFare * 0.5 : baseFare;
+    });
     return totalFare.toFixed(2);
   };
 
@@ -77,14 +81,10 @@ const BookTicket = () => {
       userId: userId || 'anonymous',
     };
 
-    console.log("Sending booking data:", ticketData);
-
     try {
       const response = await fetch(`${API_BASE_URL}/book`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticketData),
       });
 
@@ -94,12 +94,9 @@ const BookTicket = () => {
       }
 
       const result = await response.json();
-      console.log('Booking successful:', result);
-      // Pass the original bus object for booking back to payment route if needed for QR code context
       navigate('/user/payment', { state: { bookedTicketDetails: ticketData, busForBooking: bus } });
     } catch (err) {
       setError(`Booking failed: ${err.message}. Please check console for details.`);
-      console.error('Booking error:', err);
     } finally {
       setLoading(false);
     }
@@ -110,19 +107,19 @@ const BookTicket = () => {
   }
 
   return (
-    <div className="container-fluid py-5 bg-gradient-light-blue min-vh-100">
-      <h1 className="h2 fw-bold text-primary mb-4 text-center">Book Bus Ticket</h1>
+    <div className="container-fluid py-5 bg-light min-vh-100">
+      <h1 className="h2 fw-bold text-primary text-center mb-5">🎫 Book Your Bus Ticket</h1>
 
-      <div className="card shadow-sm rounded-4 p-4 mb-5 mx-auto" style={{ maxWidth: '500px' }}>
-        <h2 className="h4 fw-bold text-dark mb-3">Ticket Details</h2>
-        <div className="text-muted fs-5 mb-4">
+      <div className="card shadow rounded-4 p-4 mx-auto mb-5" style={{ maxWidth: '600px' }}>
+        <h2 className="h5 fw-bold text-dark mb-3">Ticket Summary</h2>
+        <div className="mb-4 text-muted">
           <p><strong>Bus Code:</strong> {bus.busCode}</p>
-          <p><strong>Bus Type:</strong> {bus.busType}</p>
-          <p><strong>KMs:</strong> {bus.distanceKm} km</p>
+          <p><strong>Type:</strong> {bus.busType}</p>
+          <p><strong>Distance:</strong> {bus.distanceKm} km</p>
         </div>
 
         <div className="mb-3">
-          <label htmlFor="source" className="form-label fw-bold">Source:</label>
+          <label htmlFor="source" className="form-label fw-semibold">Source</label>
           <input
             type="text"
             id="source"
@@ -133,7 +130,7 @@ const BookTicket = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="destination" className="form-label fw-bold">Destination:</label>
+          <label htmlFor="destination" className="form-label fw-semibold">Destination</label>
           <input
             type="text"
             id="destination"
@@ -144,9 +141,9 @@ const BookTicket = () => {
           />
         </div>
 
-        <h3 className="h5 fw-bold text-dark mb-3">Passenger Details</h3>
+        <h3 className="h6 fw-bold text-dark mb-3">Passenger Details</h3>
         {passengers.map((passenger, index) => (
-          <div key={index} className="row g-2 mb-3 p-3 border rounded-3 bg-light">
+          <div key={index} className="row g-2 mb-3 p-3 border rounded-3 bg-light-subtle">
             <div className="col-8">
               <input
                 type="text"
@@ -160,7 +157,7 @@ const BookTicket = () => {
             <div className="col-4">
               <input
                 type="number"
-                placeholder={`Age`}
+                placeholder="Age"
                 value={passenger.age}
                 onChange={(e) => handlePassengerChange(index, 'age', e.target.value)}
                 className="form-control rounded-pill"
@@ -170,16 +167,17 @@ const BookTicket = () => {
             </div>
           </div>
         ))}
+
         <button
           onClick={addPassenger}
-          className="btn btn-info btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center mb-4"
+          className="btn btn-outline-primary btn-sm rounded-pill mb-4"
         >
-          <span className="fs-4 me-2">+</span> Add More Members
+          ➕ Add Another Passenger
         </button>
 
-        <div className="d-flex justify-content-between align-items-center bg-light border rounded-3 p-3 mb-4">
-          <span className="h5 fw-bold text-dark mb-0">Total Bus Fare:</span>
-          <span className="h4 fw-bolder text-success mb-0">₹{calculateFare()}</span>
+        <div className="d-flex justify-content-between align-items-center bg-body-secondary border rounded-3 p-3 mb-4">
+          <span className="fw-semibold text-dark">Total Fare</span>
+          <span className="h5 fw-bold text-success mb-0">₹{calculateFare()}</span>
         </div>
 
         {error && <p className="text-danger text-center mb-3">{error}</p>}
@@ -187,7 +185,7 @@ const BookTicket = () => {
 
         <button
           onClick={handlePayNow}
-          className="btn btn-primary btn-lg w-100 rounded-pill shadow"
+          className="btn btn-success btn-lg w-100 rounded-pill shadow"
           disabled={loading}
         >
           Pay Now
