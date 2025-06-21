@@ -9,6 +9,8 @@ import QRCodeDisplay from './QRCodeDisplay.jsx';
 import TrackBus from './TrackBus.jsx';
 import StudentPass from './StudentPass.jsx';
 import MissingProducts from './MissingProducts.jsx';
+import SmartPass from './SmartPass.jsx';
+import SafetyCompanion from './SafetyCompanion.jsx';
 
 const UserApp = () => {
   const navigate = useNavigate();
@@ -56,6 +58,8 @@ const UserApp = () => {
         <Route path="book-ticket" element={<BookTicket />} />
         <Route path="payment" element={<Payment />} />
         <Route path="qrcode-display" element={<QRCodeDisplay />} />
+        <Route path="smart-pass" element={<SmartPass />} />
+        <Route path="safety-companion" element={<SafetyCompanion />} />
       </Routes>
     </div>
   );

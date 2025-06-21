@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import Profile from '/src/assets/Player.png'; // Dummy profile image
 
 const StudentPass = () => {
   const [selectedOption, setSelectedOption] = useState(null);
@@ -18,7 +18,9 @@ const StudentPass = () => {
       studentId: 'SP-2023-001',
       name: 'Anjali Sharma',
       valid: '2025-06-30'
-    })
+    }),
+    destination: 'Visakhapatnam',
+
   };
 
   const handleRenewPass = () => {
@@ -37,12 +39,12 @@ const StudentPass = () => {
         text: dummyStudentPass.qrData,
         width: 256,
         height: 256,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : window.QRCode.CorrectLevel.H
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: window.QRCode.CorrectLevel.H
       });
     }
-  }, [selectedOption, dummyStudentPass.qrData]);
+  }, [selectedOption]); // ✅ Fixed: removed dummyStudentPass.qrData from dependency array
 
   return (
     <div className="container-fluid py-5 bg-gradient-light-blue min-vh-100">
@@ -128,6 +130,14 @@ const StudentPass = () => {
       {selectedOption === 'virtualPass' && (
         <div className="card shadow-sm rounded-4 p-4 mx-auto text-center" style={{ maxWidth: '500px' }}>
           <h2 className="h4 fw-bold text-dark mb-3">Your Virtual Pass (Dummy)</h2>
+          <div className="mb-4">
+            <img
+              src={Profile}
+              alt="Student"
+              className="rounded-circle border border-primary"
+              style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+            />
+          </div>
           <div className="d-flex justify-content-center mb-4">
             <div ref={qrCodeRef} className="p-2 border border-secondary rounded-3 bg-white"></div>
           </div>
@@ -135,6 +145,7 @@ const StudentPass = () => {
             <p><strong>Name:</strong> {dummyStudentPass.name}</p>
             <p><strong>Student ID:</strong> {dummyStudentPass.studentId}</p>
             <p><strong>Valid Until:</strong> {dummyStudentPass.validUntil}</p>
+            <p><strong>Destination:</strong> {dummyStudentPass.destination}</p>
           </div>
         </div>
       )}

@@ -27,12 +27,16 @@ const Home = () => {
 
   return (
     <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-gradient-light-blue p-3 w-100">
-      <h1 className="display-4 fw-bolder text-primary mb-5 text-center" style={{fontSize:'25px'}}>Prototype: AP Bus Digital Smart Local</h1>
+      <h1 className="display-4 fw-bolder text-primary mb-5 text-center" style={{ fontSize: '25px' }}>
+        Prototype: AP Bus Digital Smart Local
+      </h1>
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-2 g-4 w-100 justify-content-center" style={{ maxWidth: '900px' }}>
         <OptionCard icon="🚌" title="Search Buses" path="/user/search-buses" />
         <OptionCard icon="📍" title="Tracking Bus" path="/user/track-bus" />
         <OptionCard icon="🎓" title="Student Pass" path="/user/student-pass" />
         <OptionCard icon="🎒" title="Missing Products" path="/user/missing-products" />
+        <OptionCard icon="👩‍🦺" title="Women & Safety Companion Mode" path="/user/safety-companion" />
+        <OptionCard icon="🎫" title="Smart Pass (Unlimited Rides)" path="/user/smart-pass" />
       </div>
     </div>
   );
