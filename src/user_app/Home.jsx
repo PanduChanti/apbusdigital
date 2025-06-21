@@ -31,7 +31,7 @@ const Home = () => {
         Prototype: AP Bus Digital Smart Local
       </h1>
       <p className="text-muted text-center mb-4" style={{ fontSize: '14px' }}>
-        Provided by Apk Innovations
+        Powered by Apk Innovations
       </p>
 
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-2 g-4 w-100 justify-content-center" style={{ maxWidth: '900px' }}>
